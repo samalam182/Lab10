@@ -2,10 +2,15 @@ package edu.up.cs301threadslab;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * This application displays several animations.  It is used for the threads lab in CS371.
@@ -19,6 +24,10 @@ public class MainActivity extends Activity
     private AnimationView myAV;
     private Button theButton;
     private SeekBar theSeekBar;
+    private Thread myThread;
+    private Runnable myRunner;
+    private Thread starThread;
+    private Runnable starRunner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,18 +35,39 @@ public class MainActivity extends Activity
         setContentView(R.layout.activity_main);
 
         //Setup the animation(s)
-        myAV = (AnimationView)findViewById(R.id.animationArea);
+        myAV = (AnimationView) findViewById(R.id.animationArea);
         myAV.addAnimation(new StarAnimation(myAV.getMyWidth(), myAV.getMyHeight()));
 
         //Let me know when someone taps the button
-        theButton = (Button)findViewById(R.id.button);
+        theButton = (Button) findViewById(R.id.button);
         theButton.setOnClickListener(this);
 
         //Let me know when someone adjusts the seekbar
-        theSeekBar = (SeekBar)findViewById(R.id.seekBar);
+        theSeekBar = (SeekBar) findViewById(R.id.seekBar);
         theSeekBar.setOnSeekBarChangeListener(this);
-    }//onClick
 
+        myRunner = new Runnable() {
+            @Override
+            public void run() {
+
+                    while (true) {
+                        myAV.postInvalidate();
+                        try {
+                            Thread.sleep(50);
+                        } catch (InterruptedException cx) {
+
+                        }
+                    }
+
+            }
+        };
+
+        myThread = new Thread(myRunner);
+        myThread.start();
+    }
+
+
+    //onClick
     @Override
     public void onClick(View v) {
         myAV.postInvalidate();
@@ -48,6 +78,8 @@ public class MainActivity extends Activity
         myAV.progressChange(seekBar.getProgress());
         myAV.postInvalidate();
     }
+
+
 
     /** These two methods aren't used */
     @Override
